@@ -1,0 +1,42 @@
+[
+  {
+    "stepTitle": "Hermes Agent 登录设置",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "设置 Hermes 控制台独立登录凭据。安装后在控制台配置模型与消息渠道。默认 HTTP 端口 19119，远程访问请使用带 HTTPS 的反向代理。"
+      },
+      {
+        "type": "text",
+        "field": "wizard_username",
+        "label": "控制台用户名",
+        "initValue": "admin",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入用户名"
+          },
+          {
+            "pattern": "^[a-zA-Z0-9_.-]{1,64}$",
+            "message": "使用字母、数字、下划线、点或横线"
+          }
+        ]
+      },
+      {
+        "type": "password",
+        "field": "wizard_password",
+        "label": "控制台密码",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入密码"
+          },
+          {
+            "pattern": "^[a-zA-Z0-9_.@%+=:!-]{12,128}$",
+            "message": "12–128 位，可用字母、数字及 _.@%+=:!-"
+          }
+        ]
+      }
+    ]
+  }
+]

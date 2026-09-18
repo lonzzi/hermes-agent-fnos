@@ -1,0 +1,13 @@
+appname=hermes-agent-fnos
+version=2026.9.14
+display_name=Hermes Agent
+desc=Hermes Agent with authenticated dashboard. Community Docker package for fnOS.
+platform=all
+source=thirdparty
+maintainer=lonzzi
+distributor=lonzzi
+desktop_uidir=ui
+desktop_applaunchname=hermes-agent-fnos.main
+service_port=19119
+checkport=true
+ctl_stop=true

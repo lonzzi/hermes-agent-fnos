@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eu
+export LC_ALL=C
+[[ "${wizard_username:-}" =~ ^[a-zA-Z0-9_.-]{1,64}$ ]] || { echo 'Invalid dashboard username' > "$TRIM_TEMP_LOGFILE"; exit 1; }
+[[ "${wizard_password:-}" =~ ^[a-zA-Z0-9_.@%+=:!-]{12,128}$ ]] || { echo 'Password must be 12-128 characters: letters, digits or _.@%+=:!-' > "$TRIM_TEMP_LOGFILE"; exit 1; }
+umask 077
+mkdir -p "$TRIM_PKGETC" "$TRIM_PKGVAR/hermes"
+tmp=$(mktemp "$TRIM_PKGETC/dashboard.env.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+printf 'HERMES_DASHBOARD_BASIC_AUTH_USERNAME=%s\nHERMES_DASHBOARD_BASIC_AUTH_PASSWORD=%s\n' "$wizard_username" "$wizard_password" > "$tmp"
+mv "$tmp" "$TRIM_PKGETC/dashboard.env"

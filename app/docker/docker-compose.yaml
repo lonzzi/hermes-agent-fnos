@@ -1,0 +1,27 @@
+services:
+  hermes:
+    image: @@IMAGE@@
+    container_name: hermes-agent-fnos
+    restart: unless-stopped
+    command: ["sleep", "infinity"]
+    ports:
+      - "${TRIM_SERVICE_PORT:-19119}:9119"
+    volumes:
+      - "${TRIM_PKGVAR}/hermes:/opt/data"
+    env_file:
+      - "${TRIM_PKGETC}/dashboard.env"
+    environment:
+      HERMES_DASHBOARD: "true"
+      HERMES_DASHBOARD_HOST: "0.0.0.0"
+      HERMES_DASHBOARD_PORT: "9119"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; socket.create_connection(('127.0.0.1',9119),5).close()"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
