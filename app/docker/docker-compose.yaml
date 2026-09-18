@@ -1,6 +1,6 @@
 services:
   hermes:
-    image: @@IMAGE@@
+    image: "@@IMAGE@@"
     container_name: hermes-agent-fnos
     restart: unless-stopped
     command: ["sleep", "infinity"]
