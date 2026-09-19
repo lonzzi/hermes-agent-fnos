@@ -10,3 +10,11 @@ set -eu
     echo 'Hermes data directory is missing after upgrade.' > "$TRIM_TEMP_LOGFILE"
     exit 1
 }
+grep -q '^HERMES_DASHBOARD_BASIC_AUTH_SECRET=' "$TRIM_PKGETC/dashboard.env" || {
+    echo 'Stable dashboard session secret is missing after upgrade.' > "$TRIM_TEMP_LOGFILE"
+    exit 1
+}
+grep -q '^HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=' "$TRIM_PKGETC/dashboard.env" || {
+    echo 'Dashboard session lifetime is missing after upgrade.' > "$TRIM_TEMP_LOGFILE"
+    exit 1
+}

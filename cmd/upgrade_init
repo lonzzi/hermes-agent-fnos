@@ -2,7 +2,6 @@
 set -eu
 
 # Refuse an upgrade when the persistent state is unexpectedly unavailable.
-# The upgrade itself never rewrites either location.
 [ -s "$TRIM_PKGETC/dashboard.env" ] || {
     echo 'Existing dashboard.env is missing; upgrade stopped to protect configuration.' > "$TRIM_TEMP_LOGFILE"
     exit 1
@@ -11,3 +10,23 @@ set -eu
     echo 'Existing Hermes data directory is missing; upgrade stopped to protect data.' > "$TRIM_TEMP_LOGFILE"
     exit 1
 }
+
+# Older package revisions generated a new signing key on every container
+# restart. Add a stable key and long-lived session without changing the user's
+# existing username or password, so the fnOS desktop window stays signed in.
+if ! grep -q '^HERMES_DASHBOARD_BASIC_AUTH_SECRET=' "$TRIM_PKGETC/dashboard.env" || \
+   ! grep -q '^HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=' "$TRIM_PKGETC/dashboard.env"; then
+    umask 077
+    tmp=$(mktemp "$TRIM_PKGETC/dashboard.env.XXXXXX")
+    trap 'rm -f "$tmp"' EXIT
+    cat "$TRIM_PKGETC/dashboard.env" > "$tmp"
+    if ! grep -q '^HERMES_DASHBOARD_BASIC_AUTH_SECRET=' "$TRIM_PKGETC/dashboard.env"; then
+        session_secret=$(od -An -N48 -tx1 /dev/urandom | tr -d ' \n')
+        printf '\nHERMES_DASHBOARD_BASIC_AUTH_SECRET=%s\n' "$session_secret" >> "$tmp"
+    fi
+    if ! grep -q '^HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=' "$TRIM_PKGETC/dashboard.env"; then
+        printf 'HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=31536000\n' >> "$tmp"
+    fi
+    chmod 600 "$tmp"
+    mv "$tmp" "$TRIM_PKGETC/dashboard.env"
+fi

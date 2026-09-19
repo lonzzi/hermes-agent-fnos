@@ -14,5 +14,7 @@ fi
 [[ "${wizard_password:-}" =~ ^[a-zA-Z0-9_.@%+=:!-]{12,128}$ ]] || { echo 'Password must be 12-128 characters: letters, digits or _.@%+=:!-' > "$TRIM_TEMP_LOGFILE"; exit 1; }
 tmp=$(mktemp "$TRIM_PKGETC/dashboard.env.XXXXXX")
 trap 'rm -f "$tmp"' EXIT
-printf 'HERMES_DASHBOARD_BASIC_AUTH_USERNAME=%s\nHERMES_DASHBOARD_BASIC_AUTH_PASSWORD=%s\n' "$wizard_username" "$wizard_password" > "$tmp"
+session_secret=$(od -An -N48 -tx1 /dev/urandom | tr -d ' \n')
+printf 'HERMES_DASHBOARD_BASIC_AUTH_USERNAME=%s\nHERMES_DASHBOARD_BASIC_AUTH_PASSWORD=%s\nHERMES_DASHBOARD_BASIC_AUTH_SECRET=%s\nHERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=31536000\n' \
+    "$wizard_username" "$wizard_password" "$session_secret" > "$tmp"
 mv "$tmp" "$TRIM_PKGETC/dashboard.env"

@@ -17,6 +17,8 @@ with tempfile.TemporaryDirectory() as tmp:
     before=config.read_bytes()
     subprocess.run(['bash',str(root/'cmd/install_callback')],env=env,check=True)
     assert b'Test-password123!' in before
+    assert b'HERMES_DASHBOARD_BASIC_AUTH_SECRET=' in before
+    assert b'HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=31536000' in before
     assert config.stat().st_mode & 0o777 == 0o600
     subprocess.run(['bash',str(root/'cmd/install_init')],env={**env,'wizard_username':'replacement','wizard_password':'Replacement123!'},check=True)
     assert config.read_bytes()==before
@@ -34,6 +36,20 @@ with tempfile.TemporaryDirectory() as tmp:
     subprocess.run(['bash',str(root/'cmd/upgrade_callback')],env=env,check=True)
     assert config.read_bytes()==before
     assert (base/'var/hermes/sentinel').read_text()=='retained'
+    legacy=base/'legacy'
+    (legacy/'etc').mkdir(parents=True)
+    (legacy/'var/hermes').mkdir(parents=True)
+    legacy_config=legacy/'etc/dashboard.env'
+    legacy_config.write_text('HERMES_DASHBOARD_BASIC_AUTH_USERNAME=existing\nHERMES_DASHBOARD_BASIC_AUTH_PASSWORD=Existing-password123!\n')
+    legacy_env={**env,'TRIM_PKGETC':str(legacy/'etc'),'TRIM_PKGVAR':str(legacy/'var')}
+    subprocess.run(['bash',str(root/'cmd/upgrade_init')],env=legacy_env,check=True)
+    migrated=legacy_config.read_bytes()
+    assert b'HERMES_DASHBOARD_BASIC_AUTH_USERNAME=existing' in migrated
+    assert b'HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=Existing-password123!' in migrated
+    assert b'HERMES_DASHBOARD_BASIC_AUTH_SECRET=' in migrated
+    assert b'HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS=31536000' in migrated
+    subprocess.run(['bash',str(root/'cmd/upgrade_init')],env=legacy_env,check=True)
+    assert legacy_config.read_bytes()==migrated
     spec=importlib.util.spec_from_file_location('release',root/'scripts/release.py')
     module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     release={'tag_name':'v2026.9.14','draft':False,'prerelease':False}
