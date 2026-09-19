@@ -18,11 +18,19 @@ with tempfile.TemporaryDirectory() as tmp:
     subprocess.run(['bash',str(root/'cmd/install_callback')],env=env,check=True)
     assert b'Test-password123!' in before
     assert config.stat().st_mode & 0o777 == 0o600
+    subprocess.run(['bash',str(root/'cmd/install_init')],env={**env,'wizard_username':'replacement','wizard_password':'Replacement123!'},check=True)
+    assert config.read_bytes()==before
     for invalid in ['short','contains\nnewline123', '$(touch attacked)']:
-        result=subprocess.run(['bash',str(root/'cmd/install_init')],env={**env,'wizard_password':invalid})
-        assert result.returncode != 0
+        subprocess.run(['bash',str(root/'cmd/install_init')],env={**env,'wizard_password':invalid},check=True)
         assert config.read_bytes()==before
+        invalid_base=base/('invalid-'+str(len(invalid)))
+        invalid_env={**env,'TRIM_PKGETC':str(invalid_base/'etc'),'TRIM_PKGVAR':str(invalid_base/'var'),
+                     'TRIM_TEMP_LOGFILE':str(invalid_base/'error'),'wizard_password':invalid}
+        result=subprocess.run(['bash',str(root/'cmd/install_init')],env=invalid_env)
+        assert result.returncode != 0
+        assert not (invalid_base/'etc/dashboard.env').exists()
     (base/'var/hermes/sentinel').write_text('retained')
+    subprocess.run(['bash',str(root/'cmd/upgrade_init')],env=env,check=True)
     subprocess.run(['bash',str(root/'cmd/upgrade_callback')],env=env,check=True)
     assert config.read_bytes()==before
     assert (base/'var/hermes/sentinel').read_text()=='retained'

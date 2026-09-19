@@ -1,5 +1,12 @@
 #!/bin/bash
+set -eu
 
-### This script is called after the user upgrades the application.
-
-exit 0
+# Verify that fnOS kept the persistent mounts after replacing the package.
+[ -s "$TRIM_PKGETC/dashboard.env" ] || {
+    echo 'dashboard.env is missing after upgrade.' > "$TRIM_TEMP_LOGFILE"
+    exit 1
+}
+[ -d "$TRIM_PKGVAR/hermes" ] || {
+    echo 'Hermes data directory is missing after upgrade.' > "$TRIM_TEMP_LOGFILE"
+    exit 1
+}

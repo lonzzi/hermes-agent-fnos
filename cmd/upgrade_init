@@ -1,5 +1,13 @@
 #!/bin/bash
+set -eu
 
-### This script is called before the user upgrades the application.
-
-exit 0
+# Refuse an upgrade when the persistent state is unexpectedly unavailable.
+# The upgrade itself never rewrites either location.
+[ -s "$TRIM_PKGETC/dashboard.env" ] || {
+    echo 'Existing dashboard.env is missing; upgrade stopped to protect configuration.' > "$TRIM_TEMP_LOGFILE"
+    exit 1
+}
+[ -d "$TRIM_PKGVAR/hermes" ] || {
+    echo 'Existing Hermes data directory is missing; upgrade stopped to protect data.' > "$TRIM_TEMP_LOGFILE"
+    exit 1
+}
