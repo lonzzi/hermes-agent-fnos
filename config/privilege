@@ -1,8 +1,7 @@
 {
-    "defaults":
-    {
-        "run-as": "package"
-    },
-    "username": "docker-hermes-agent-fnos",
-    "groupname": "docker-hermes-agent-fnos"
+  "defaults": {
+    "run-as": "root"
+  },
+  "username": "docker-hermes-agent-fnos",
+  "groupname": "docker-hermes-agent-fnos"
 }

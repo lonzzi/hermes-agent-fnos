@@ -12,13 +12,14 @@ with tempfile.TemporaryDirectory() as tmp:
     base=pathlib.Path(tmp)
     env={**os.environ,'TRIM_PKGETC':str(base/'etc'),'TRIM_PKGVAR':str(base/'var'),
          'TRIM_TEMP_LOGFILE':str(base/'error'),'wizard_username':'admin','wizard_password':'Test-password123!'}
-    subprocess.run(['bash',str(root/'cmd/install_callback')],env=env,check=True)
+    subprocess.run(['bash',str(root/'cmd/install_init')],env=env,check=True)
     config=base/'etc/dashboard.env'
     before=config.read_bytes()
+    subprocess.run(['bash',str(root/'cmd/install_callback')],env=env,check=True)
     assert b'Test-password123!' in before
     assert config.stat().st_mode & 0o777 == 0o600
     for invalid in ['short','contains\nnewline123', '$(touch attacked)']:
-        result=subprocess.run(['bash',str(root/'cmd/install_callback')],env={**env,'wizard_password':invalid})
+        result=subprocess.run(['bash',str(root/'cmd/install_init')],env={**env,'wizard_password':invalid})
         assert result.returncode != 0
         assert config.read_bytes()==before
     (base/'var/hermes/sentinel').write_text('retained')

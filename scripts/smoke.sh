@@ -12,6 +12,9 @@ cleanup() {
   sudo rm -rf "$fixture"
 }
 trap cleanup EXIT
+bash .build/package/cmd/install_init
+# fnOS validates Docker resources before its post-install callback.
+"${compose[@]}" config --quiet
 bash .build/package/cmd/install_callback
 "${compose[@]}" config --quiet
 "${compose[@]}" pull
