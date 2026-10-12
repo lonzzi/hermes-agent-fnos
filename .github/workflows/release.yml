@@ -53,6 +53,7 @@ jobs:
         env:
           UPSTREAM_TAG: ${{ needs.detect.outputs.tag }}
           PACKAGE_VERSION: ${{ needs.detect.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
         run: python3 scripts/release.py build --tag "$UPSTREAM_TAG" --version "$PACKAGE_VERSION" --fnpack "$RUNNER_TEMP/fnpack"
       - name: Smoke-test official dashboard on amd64
         env:

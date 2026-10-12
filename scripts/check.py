@@ -62,4 +62,5 @@ with tempfile.TemporaryDirectory() as tmp:
         try: module.detect()
         except ValueError: pass
         else: raise AssertionError('Unsafe tag accepted')
+subprocess.run(['python3', str(root/'scripts/test_release.py')], check=True)
 print('Package source checks passed')

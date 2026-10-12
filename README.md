@@ -37,7 +37,7 @@
 
 1. 查询上游最新正式 GitHub Release，忽略草稿与预发布版本。
 2. 检查本仓库对应 `上游tag-fnos.修订号` 是否已发布；已发布则跳过。
-3. 解析官方 `nousresearch/hermes-agent:<上游tag>` 镜像，确认支持 Linux amd64 / arm64，锁定多架构索引 SHA256。
+3. 优先读取上游正式 Git tag 的发布回执，验证版本、Release ID、提交和发布尝试身份，直接使用回执中的官方 Docker 多架构索引 SHA256（例如 `v0.21.7` 对应 `rc.15-v0.21.7`）。旧版没有回执时才解析 `nousresearch/hermes-agent:<上游tag>`。始终按固定摘要检查 Linux amd64 / arm64，不使用会变动的 `stable` / `latest`。
 4. 使用固定版本、校验摘要的官方 `fnpack 1.2.3` 生成 FPK。
 5. 在 GitHub Linux amd64 runner 拉取镜像，验证控制台启动、错误密码拒绝、正确密码登录和会话访问。
 6. 检查成功后发布 FPK、`SHA256SUMS` 和 `upstream.json`。先创建草稿、上传完整资产，再转为正式 Release。
